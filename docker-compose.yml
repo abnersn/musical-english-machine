@@ -1,0 +1,17 @@
+services:
+  client:
+    image: mem_client
+    container_name: mem_client
+    build:
+      context: client
+    ports:
+      - 3000:3000
+    volumes:
+      - ./client:/app
+    networks:
+      - mem
+    command: npm run dev
+
+networks:
+  mem:
+    driver: bridge
