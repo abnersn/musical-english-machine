@@ -1,0 +1,45 @@
+# Python bytecode files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Environment variables
+.env
+.flaskenv
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# Migrations
+migrations/
+
+# Flask cache and instance folder
+instance/
+*.sqlite3
+
+# Pytest cache
+.pytest_cache/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# VS Code and other editor settings
+.vscode/
+.idea/
+*.swp
+*~
+
+# MacOS metadata files
+.DS_Store
+
+# Logs and local debug files
+*.log
+*.out
+*.err
+
+# Coverage
