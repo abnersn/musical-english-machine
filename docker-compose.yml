@@ -34,7 +34,7 @@ services:
       - ./server:/app
     networks:
       - mem
-    command: flask --app app run --debug --host=0.0.0.0
+    command: flask run --debug
     labels:
       - traefik.http.routers.server.rule=PathPrefix(`/api`)
       - traefik.http.services.server.loadbalancer.server.port=5000

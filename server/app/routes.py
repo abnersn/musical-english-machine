@@ -1,13 +1,12 @@
 from os import environ
 
-from flask import Blueprint, request, redirect
+from flask import Blueprint
+from flask import current_app, request, redirect
 from urllib.parse import urlencode
-import hashlib, secrets
+
+from app.models import user_auth_flow
 
 api = Blueprint('api', __name__, url_prefix='/api')
-
-# Generate string to validate requests
-api_state = hashlib.sha256(secrets.token_bytes(16)).hexdigest()
 
 @api.route("/")
 def main():
@@ -19,17 +18,18 @@ def authorize():
     "response_type": 'code',
     "client_id": environ.get("SPOTIFY_CLIENT_ID"),
     "scope": "user-read-recently-played",
-    "redirect_uri": "http://localhost/api/callback",
-    "state": api_state
+    "redirect_uri": f"{environ.get("APP_URI")}/api/callback",
+    "state": current_app.secret_key
   })
   return redirect(f'https://accounts.spotify.com/authorize?{data}')
 
 @api.route("/callback", methods=["GET"])
 def callback():
-  if (request.args.get("state") != api_state):
+  if (request.args.get("state") != current_app.secret_key):
     return "Invalid request", 500
 
   if (request.args.get("error") == "access_denied"):
     return "User did not authorize", 500
 
-  return f"<h1>Hello spotify {request.args.get("code")}</h1>"
+  user = user_auth_flow()
+  return f"<pre>{user}</pre>"
