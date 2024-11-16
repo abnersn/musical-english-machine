@@ -4,7 +4,7 @@ from flask import Blueprint
 from flask import current_app, request, redirect
 from urllib.parse import urlencode
 
-from app.models import user_auth_flow
+from .models import user_auth_flow
 
 api = Blueprint('api', __name__, url_prefix='/api')
 

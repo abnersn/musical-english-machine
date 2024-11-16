@@ -1,7 +1,8 @@
 from os import environ
-import requests
-from app.database import get_db
-from datetime import datetime, timedelta
+
+from .database import get_db
+from .utils import get_expiration_date, is_expired
+from .integrations import get_spotify_user_token, refresh_spotify_user_token
 
 def user_auth_flow(token_request_code):
   # First we try to get data from existing user
@@ -13,21 +14,9 @@ def user_auth_flow(token_request_code):
   )
   user = cursor.fetchone()
   
-  # If it doesn't exist, we request access token to create it
+  # If user doesn't exist on db, we request access token 
   if user is None:
-    auth_response = requests.post('https://accounts.spotify.com/api/token', data={
-      'code': token_request_code,
-      'redirect_url': f"{environ.get("APP_URI")}/api/callback",
-      'grant_type': 'authorization_code'
-    })
-    user_data = auth_response.json()
-
-    user = {
-      'token_request_code': token_request_code,
-      'access_token': user_data['access_token'],
-      'expiration_date': datetime.now() + timedelta(seconds=user_data['expires_in']),
-      'refresh_token': user_data['refresh_token']
-    }
+    user = get_spotify_user_token(token_request_code)
 
     db.execute('''
       INSERT INTO users (
@@ -38,17 +27,9 @@ def user_auth_flow(token_request_code):
       )
     ''', tuple(user.values()))
   
-  # If user exists, but token is expired, we request a new one
-  if datetime.strptime(user["expiration_date"]) < datetime.now():
-    auth_response = requests.post('https://accounts.spotify.com/api/token', data={
-      'client_id': environ.get("SPOTIFY_CLIENT_ID"),
-      'refresh_token': user["refresh_token"],
-      'grant_type': 'refresh_token'
-    })
-    user_data = auth_response.json()
-    user['access_token'] = user_data['access_token']
-    user['expiration-date'] = datetime.now() + timedelta(seconds=user_data['expires_in'])
-
+  # If user exists on db, but token is expired, we request a new one
+  if is_expired(user["expiration_date"]):
+    access_token, expiration_date = refresh_spotify_user_token(user)
     db.execute('''
       UPDATE users SET
         access_token = ?,
@@ -56,8 +37,8 @@ def user_auth_flow(token_request_code):
       WHERE
         id = ?
     ''', (
-      user['access_token'],
-      user['expiration-date'],
+      access_token,
+      expiration_date,
       token_request_code
     ))
   
