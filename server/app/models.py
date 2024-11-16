@@ -1,7 +1,5 @@
-from os import environ
-
 from .database import get_db
-from .utils import get_expiration_date, is_expired
+from .utils import is_expired
 from .integrations import get_spotify_user_token, refresh_spotify_user_token
 
 def user_auth_flow(token_request_code):
@@ -17,15 +15,15 @@ def user_auth_flow(token_request_code):
   # If user doesn't exist on db, we request access token 
   if user is None:
     user = get_spotify_user_token(token_request_code)
-
     db.execute('''
       INSERT INTO users (
         token_request_code,
         access_token,
         expiration_date,
         refresh_token
-      )
+      ) VALUES (?, ?, ?, ?)
     ''', tuple(user.values()))
+    return user
   
   # If user exists on db, but token is expired, we request a new one
   if is_expired(user["expiration_date"]):
@@ -35,7 +33,7 @@ def user_auth_flow(token_request_code):
         access_token = ?,
         expiration_date = ?
       WHERE
-        id = ?
+        token_request_code = ?
     ''', (
       access_token,
       expiration_date,
