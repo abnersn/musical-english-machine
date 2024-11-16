@@ -8,10 +8,6 @@ from .models import user_auth_flow
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
-@api.route("/")
-def main():
-  return "<p>Hello, world!</p>"
-
 @api.route("/authorize")
 def authorize():
   data = urlencode({
@@ -32,4 +28,4 @@ def callback():
     return "User did not authorize", 500
 
   user = user_auth_flow(request.args.get("code"))
-  return f"<pre>{user}</pre>"
+  return redirect(f'/?token_request_code={user['token_request_code']}')
