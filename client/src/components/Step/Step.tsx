@@ -1,6 +1,14 @@
 import { StepProps } from './types';
 
-export default function Step({ title, complete, children }: StepProps) {
+export default function Step({ title, complete, error, children }: StepProps) {
+  if (error) {
+    return (
+      <section>
+        <h2>{title}</h2>
+        ⚠️ Houve um erro
+      </section>
+    );
+  }
   if (complete) {
     return (
       <section>

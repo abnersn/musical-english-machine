@@ -21,11 +21,11 @@ def authorize():
 
 @api.route("/callback", methods=["GET"])
 def callback():
-  if (request.args.get("state") != current_app.secret_key):
-    return "Invalid request", 500
-
-  if (request.args.get("error") == "access_denied"):
-    return "User did not authorize", 500
+  if (
+    request.args.get("state") != current_app.secret_key or
+    request.args.get("error") == "access_denied"
+  ):
+    return redirect(f'/?authorization_error=true')
 
   user = user_auth_flow(request.args.get("code"))
   return redirect(f'/?token_request_code={user['token_request_code']}')
