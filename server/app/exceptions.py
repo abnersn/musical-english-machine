@@ -1,0 +1,2 @@
+class SpotifyAPIError(Exception):
+  pass

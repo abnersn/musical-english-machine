@@ -31,5 +31,5 @@ def callback():
   if (request.args.get("error") == "access_denied"):
     return "User did not authorize", 500
 
-  user = user_auth_flow()
+  user = user_auth_flow(request.args.get("code"))
   return f"<pre>{user}</pre>"
