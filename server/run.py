@@ -9,6 +9,8 @@ app = create_app()
 socketio = SocketIO(app)
 
 if __name__ == "__main__":
-  socketio.run(
-    app, host=environ.get('HOST'), port=environ.get('PORT')
+  socketio.run(app,
+    debug=environ.get('DEBUG') == '1',
+    host=environ.get('HOST'),
+    port=environ.get('PORT')
   )
